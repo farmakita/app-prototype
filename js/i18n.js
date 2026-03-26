@@ -2,7 +2,7 @@
 
 const TRANSLATIONS = {
   id: {
-    appName: 'ApotekKu',
+    appName: 'Apotek Mutiara',
     tagline: 'Konsultasi Obat Mudah & Terpercaya',
     langToggle: 'English',
 
@@ -94,7 +94,7 @@ const TRANSLATIONS = {
 
     // Confirmation
     confTitle: 'Pesanan Berhasil! 🎉',
-    confSub: 'Terima kasih telah berbelanja di ApotekKu',
+    confSub: 'Terima kasih telah berbelanja di Apotek Mutiara',
     orderNum: 'Nomor Pesanan',
     estimatedDel: 'Estimasi Tiba',
     orderItems: 'Pesanan Anda',
@@ -110,7 +110,7 @@ const TRANSLATIONS = {
   },
 
   en: {
-    appName: 'ApotekKu',
+    appName: 'Apotek Mutiara',
     tagline: 'Easy & Trusted Medication Consultation',
     langToggle: 'Indonesia',
 
@@ -192,7 +192,7 @@ const TRANSLATIONS = {
     errDelivery: 'Select a delivery method',
 
     confTitle: 'Order Successful! 🎉',
-    confSub: 'Thank you for shopping at ApotekKu',
+    confSub: 'Thank you for shopping at Apotek Mutiara',
     orderNum: 'Order Number',
     estimatedDel: 'Estimated Arrival',
     orderItems: 'Your Order',
