@@ -15,6 +15,8 @@
 - [6. Pengembangan di Masa Depan (Opsional)](#6-pengembangan-di-masa-depan-opsional)
 - [7. Pertimbangan Teknologi](#7-pertimbangan-teknologi)
 - [8. Perubahan Versi 2 (V2)](#8-perubahan-versi-2-v2)
+- [9. Ide Pengembangan Masa Depan (V3+)](#9-ide-pengembangan-masa-depan-v3)
+  - [9.1 Konsultasi Gejala Berbasis AI](#91-konsultasi-gejala-berbasis-ai)
   - [8.1 Konsultasi Berbasis Gejala — Penambahan Input Teks Bebas](#81-konsultasi-berbasis-gejala--penambahan-input-teks-bebas)
   - [8.2 Rekomendasi Obat — Cakupan Harga & Kategori Obat](#82-rekomendasi-obat--cakupan-harga--kategori-obat)
   - [8.3 Katalog Produk — Informasi Cara Penggunaan Obat](#83-katalog-produk--informasi-cara-penggunaan-obat)
@@ -293,3 +295,26 @@ Dua fitur opsional mendapat penjelasan lebih rinci:
 | Alur konsultasi dokter | Tidak ada | Ditawarkan sebelum rekomendasi obat |
 | Fitur dokter berlisensi | Opsional masa depan | Diprioritaskan (syarat jual obat keras) |
 | Langganan obat rutin | Disebutkan singkat | + Notifikasi otomatis saat stok habis |
+
+---
+
+## 9. Ide Pengembangan Masa Depan (V3+)
+
+### 9.1 Konsultasi Gejala Berbasis AI
+
+**Deskripsi:**
+Menggantikan sistem pemilihan gejala berbasis daftar dengan percakapan alami yang dipandu oleh AI. Pengguna dapat mendeskripsikan keluhan mereka secara bebas, dan sistem akan mengajukan pertanyaan lanjutan secara otomatis untuk memperjelas kondisi — seperti durasi gejala, tingkat keparahan, dan riwayat obat sebelumnya — sebelum memberikan rekomendasi yang lebih tepat.
+
+**Manfaat bisnis:**
+- Meningkatkan akurasi rekomendasi obat secara signifikan
+- Pengalaman pengguna yang lebih alami dan mudah digunakan
+- Mampu menangani kombinasi gejala yang kompleks yang tidak tercakup dalam daftar pilihan
+- Membedakan Apotek Mutiara dari apotek online konvensional
+
+**Batasan yang tetap berlaku:**
+- Sistem hanya boleh merekomendasikan obat bebas dan obat bebas terbatas sesuai regulasi BPOM
+- Bukan pengganti konsultasi dokter; disclaimer medis tetap wajib ditampilkan
+- Untuk obat keras, tetap memerlukan jalur resep dokter berlisensi (lihat §8.5)
+
+**Catatan implementasi:**
+Pendekatan yang direkomendasikan adalah sistem hibrida: AI menangani percakapan dan diagnosis, sementara katalog obat yang telah diverifikasi (dengan harga, kategori BPOM, dan dosis yang akurat) tetap dikelola secara internal oleh tim Apotek Mutiara. Hal ini memastikan informasi produk yang ditampilkan kepada pengguna selalu akurat dan dapat dipertanggungjawabkan.
