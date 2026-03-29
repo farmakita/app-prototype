@@ -15,8 +15,6 @@
 - [6. Pengembangan di Masa Depan (Opsional)](#6-pengembangan-di-masa-depan-opsional)
 - [7. Pertimbangan Teknologi](#7-pertimbangan-teknologi)
 - [8. Perubahan Versi 2 (V2)](#8-perubahan-versi-2-v2)
-- [9. Ide Pengembangan Masa Depan (V3+)](#9-ide-pengembangan-masa-depan-v3)
-  - [9.1 Konsultasi Gejala Berbasis AI](#91-konsultasi-gejala-berbasis-ai)
   - [8.1 Konsultasi Berbasis Gejala — Penambahan Input Teks Bebas](#81-konsultasi-berbasis-gejala--penambahan-input-teks-bebas)
   - [8.2 Rekomendasi Obat — Cakupan Harga & Kategori Obat](#82-rekomendasi-obat--cakupan-harga--kategori-obat)
   - [8.3 Katalog Produk — Informasi Cara Penggunaan Obat](#83-katalog-produk--informasi-cara-penggunaan-obat)
@@ -24,6 +22,8 @@
   - [8.5 Alur Pengguna — Profil Tersimpan & Konsultasi Dokter](#85-alur-pengguna--profil-tersimpan--konsultasi-dokter)
   - [8.6 Pengembangan Masa Depan — Klarifikasi Fitur Penting](#86-pengembangan-masa-depan--klarifikasi-fitur-penting)
   - [Ringkasan Perubahan V1 → V2](#ringkasan-perubahan-v1--v2)
+- [9. Ide Pengembangan Masa Depan (V3+)](#9-ide-pengembangan-masa-depan-v3)
+  - [9.1 Konsultasi Gejala Berbasis AI](#91-konsultasi-gejala-berbasis-ai)
 
 ---
 
