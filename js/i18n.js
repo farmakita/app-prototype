@@ -27,7 +27,10 @@ const TRANSLATIONS = {
     noAllergyKnown: 'Tidak ada alergi yang diketahui',
     symptomsTitle: 'Pilih Gejala Anda',
     symptomsSub: 'Pilih satu atau lebih gejala yang Anda alami saat ini',
+    customSymptomsLabel: 'Gejala Tambahan (opsional)',
+    customSymptomsPlaceholder: 'Ketik gejala lain yang tidak ada di daftar di atas…',
     submitConsult: 'Cari Rekomendasi Obat',
+    profileLoaded: 'Data profil Anda telah dimuat otomatis.',
 
     // Errors
     errAge: 'Masukkan usia yang valid (1–120 tahun)',
@@ -42,6 +45,25 @@ const TRANSLATIONS = {
     searchSub4: 'Hampir selesai…',
 
     // Recommendations
+    // Doctor offer screen
+    doctorOfferTitle: 'Butuh Konsultasi Dokter?',
+    doctorOfferSub: 'Jika gejala Anda terasa serius atau Anda tidak yakin, konsultasikan langsung dengan dokter berlisensi.',
+    doctorYes: 'Ya, Konsultasi Dokter',
+    doctorNo: 'Tidak, Lihat Rekomendasi Obat',
+    doctorNote: 'Konsultasi dokter diperlukan untuk mendapatkan resep obat keras.',
+    doctorComingTitle: 'Segera Hadir!',
+    doctorComingSub: 'Fitur konsultasi dokter online sedang dalam pengembangan. Sementara itu, Anda dapat menggunakan aplikasi seperti Halodoc atau Alodokter.',
+    doctorClose: 'Tutup',
+
+    // Drug category badges
+    catLabelBebas: 'Obat Bebas',
+    catLabelBebasTerbatas: 'Bebas Terbatas',
+    catLabelHerbal: 'Herbal / Jamu',
+
+    // Map
+    mapLabel: 'Tandai Lokasi di Peta',
+    mapHint: 'Ketuk peta untuk menandai lokasi pengiriman Anda',
+
     recomTitle: 'Rekomendasi Obat',
     recomSub: 'Berdasarkan gejala, usia, dan berat badan Anda',
     patientSummary: 'Ringkasan Pasien',
@@ -132,7 +154,10 @@ const TRANSLATIONS = {
     noAllergyKnown: 'No known allergies',
     symptomsTitle: 'Select Your Symptoms',
     symptomsSub: 'Select one or more symptoms you are currently experiencing',
+    customSymptomsLabel: 'Additional Symptoms (optional)',
+    customSymptomsPlaceholder: 'Type any other symptoms not listed above…',
     submitConsult: 'Find Medication Recommendations',
+    profileLoaded: 'Your profile data has been loaded automatically.',
 
     errAge: 'Enter a valid age (1–120 years)',
     errWeight: 'Enter a valid weight (1–300 kg)',
@@ -143,6 +168,25 @@ const TRANSLATIONS = {
     searchSub2: 'Searching commonly used medications in Indonesia…',
     searchSub3: 'Checking safety based on age & allergies…',
     searchSub4: 'Almost done…',
+
+    // Doctor offer screen
+    doctorOfferTitle: 'Need a Doctor?',
+    doctorOfferSub: 'If your symptoms feel serious or you are unsure, consult directly with a licensed doctor.',
+    doctorYes: 'Yes, Consult a Doctor',
+    doctorNo: 'No, Show Medication Recommendations',
+    doctorNote: 'Doctor consultation is required to obtain a prescription for prescription-only medicines.',
+    doctorComingTitle: 'Coming Soon!',
+    doctorComingSub: 'The online doctor consultation feature is currently in development. In the meantime, you can use apps like Halodoc or Alodokter.',
+    doctorClose: 'Close',
+
+    // Drug category badges
+    catLabelBebas: 'OTC (Free)',
+    catLabelBebasTerbatas: 'Limited OTC',
+    catLabelHerbal: 'Herbal / Jamu',
+
+    // Map
+    mapLabel: 'Pin Your Location on Map',
+    mapHint: 'Tap the map to mark your delivery location',
 
     recomTitle: 'Medication Recommendations',
     recomSub: 'Based on your symptoms, age, and weight',

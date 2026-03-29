@@ -25,6 +25,7 @@ const App = {
     screen: 'welcome',
     patient: { age: '', weight: '', allergies: [] },
     symptoms: [],
+    customSymptoms: '',
     recommendations: [],
     cart: [],          // [{ med, qty }]
     selectedPayment: null,
@@ -33,10 +34,23 @@ const App = {
     selectedDelivery: null,
     orderNumber: null,
     orderTime: null,
+    profileLoadedFromStorage: false,
   },
 
   /* ── helpers ── */
   fmt(n) { return 'Rp\u00a0' + Number(n).toLocaleString('id-ID'); },
+
+  saveProfile() {
+    try { localStorage.setItem('apotek_profile', JSON.stringify(this.state.patient)); } catch(e) {}
+  },
+
+  loadProfile() {
+    try {
+      const saved = localStorage.getItem('apotek_profile');
+      if (saved) { const p = JSON.parse(saved); if (p && typeof p === 'object') return p; }
+    } catch(e) {}
+    return null;
+  },
 
   cartTotal() {
     return this.state.cart.reduce((s, i) => s + i.med.price * i.qty, 0);
@@ -70,7 +84,7 @@ const App = {
     const s = this.state.screen;
     const showHeader = !['welcome', 'searching'].includes(s);
     const STEP_SCREENS = ['consultation','recommendations','cart','payment','delivery'];
-    const stepIdx = STEP_SCREENS.indexOf(s);
+    const stepIdx = s === 'doctorOffer' ? 0 : STEP_SCREENS.indexOf(s);
 
     return `
       <div id="appWrapper" class="max-w-[430px] mx-auto min-h-screen bg-white flex flex-col relative">
@@ -126,6 +140,7 @@ const App = {
     switch (s) {
       case 'welcome':         return this.screenWelcome();
       case 'consultation':    return this.screenConsultation();
+      case 'doctorOffer':     return this.screenDoctorOffer();
       case 'searching':       return this.screenSearching();
       case 'recommendations': return this.screenRecommendations();
       case 'cart':            return this.screenCart();
@@ -203,6 +218,45 @@ const App = {
   },
 
   /* ─────────────────────────────────────────────
+     SCREEN: DOCTOR OFFER
+  ───────────────────────────────────────────── */
+  screenDoctorOffer() {
+    return `
+      <div class="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center">
+        <div class="w-24 h-24 bg-teal-100 rounded-full flex items-center justify-center mb-5 text-5xl">🩺</div>
+        <h2 class="text-xl font-bold text-slate-800 mb-2">${t('doctorOfferTitle')}</h2>
+        <p class="text-sm text-slate-500 mb-2">${t('doctorOfferSub')}</p>
+        <p class="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-8">
+          ⚠️ ${t('doctorNote')}
+        </p>
+        <div class="flex flex-col gap-3 w-full max-w-xs">
+          <button id="btnDoctorYes"
+            class="w-full bg-teal-600 text-white font-bold py-3.5 rounded-xl text-sm active:bg-teal-700 transition-colors">
+            ${t('doctorYes')}
+          </button>
+          <button id="btnDoctorNo"
+            class="w-full border-2 border-teal-500 text-teal-600 font-bold py-3.5 rounded-xl text-sm active:bg-teal-50 transition-colors">
+            ${t('doctorNo')}
+          </button>
+        </div>
+      </div>
+
+      <!-- Doctor coming soon modal -->
+      <div id="doctorModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
+        <div class="bg-white rounded-t-3xl w-full max-w-[430px] p-6 text-center">
+          <div class="text-5xl mb-4">🏥</div>
+          <h3 class="text-lg font-bold text-slate-800 mb-2">${t('doctorComingTitle')}</h3>
+          <p class="text-sm text-slate-500 mb-6">${t('doctorComingSub')}</p>
+          <button id="btnDoctorClose"
+            class="w-full bg-teal-600 text-white font-bold py-3.5 rounded-xl text-sm">
+            ${t('doctorClose')}
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  /* ─────────────────────────────────────────────
      SCREEN: CONSULTATION
   ───────────────────────────────────────────── */
   screenConsultation() {
@@ -231,10 +285,19 @@ const App = {
       `;
     }).join('');
 
+    const profileBanner = this.state.profileLoadedFromStorage ? `
+      <div class="bg-teal-50 border border-teal-200 rounded-xl px-4 py-2.5 mb-5 flex items-center gap-2">
+        <span class="text-teal-600 text-lg">✓</span>
+        <p class="text-xs text-teal-700 font-medium">${t('profileLoaded')}</p>
+      </div>
+    ` : '';
+
     return `
       <div class="px-4 pt-5 pb-32">
         <h2 class="text-xl font-bold text-slate-800 mb-1">${t('consultTitle')}</h2>
-        <p class="text-sm text-slate-500 mb-6">${t('consultSub')}</p>
+        <p class="text-sm text-slate-500 mb-4">${t('consultSub')}</p>
+
+        ${profileBanner}
 
         <!-- Age + Weight -->
         <div class="grid grid-cols-2 gap-3 mb-5">
@@ -277,6 +340,15 @@ const App = {
           <div class="grid grid-cols-3 gap-2">
             ${symptomChips}
           </div>
+        </div>
+
+        <!-- Custom symptoms free-text -->
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">${t('customSymptomsLabel')}</label>
+          <textarea id="inputCustomSymptoms" rows="2"
+            placeholder="${t('customSymptomsPlaceholder')}"
+            class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm resize-none transition-colors"
+          >${this.state.customSymptoms}</textarea>
         </div>
       </div>
 
@@ -358,6 +430,9 @@ const App = {
       return s ? `${s.emoji} ${lang === 'id' ? s.id_label : s.en_label}` : sid;
     }).join(', ');
 
+    const customSymptomsSummary = this.state.customSymptoms.trim()
+      ? `<div class="text-xs text-slate-400 mt-1 italic">${this.state.customSymptoms.trim()}</div>` : '';
+
     const patCard = `
       <div class="bg-teal-50 rounded-xl p-4 mb-5 border border-teal-100">
         <p class="text-xs font-bold text-teal-700 uppercase tracking-wide mb-2">${t('patientSummary')}</p>
@@ -378,6 +453,7 @@ const App = {
         <div class="text-xs text-slate-500">
           <span class="font-medium">${t('symptomsFor')}:</span> ${symptomLabels}
         </div>
+        ${customSymptomsSummary}
       </div>
     `;
 
@@ -407,6 +483,10 @@ const App = {
           `;
         }
         const inCart = cartIds.has(med.id);
+        const catBadge = med.category === 'bebas' ? `<span class="inline-flex items-center gap-1 text-[10px] bg-green-100 text-green-700 border border-green-200 px-2 py-0.5 rounded-full font-medium"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>${t('catLabelBebas')}</span>`
+          : med.category === 'bebas_terbatas' ? `<span class="inline-flex items-center gap-1 text-[10px] bg-blue-100 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full font-medium"><span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>${t('catLabelBebasTerbatas')}</span>`
+          : med.category === 'herbal' ? `<span class="inline-flex items-center gap-1 text-[10px] bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium">🌿 ${t('catLabelHerbal')}</span>`
+          : '';
         return `
           <div class="med-card bg-white border border-slate-100 rounded-2xl p-4 mb-3 shadow-sm">
             <div class="flex items-start gap-3 mb-3">
@@ -416,9 +496,12 @@ const App = {
               <div class="flex-1 min-w-0">
                 <p class="font-bold text-slate-800 text-sm">${med.brand}</p>
                 <p class="text-xs text-slate-400">${lang === 'id' ? med.generic_id : med.generic_en}</p>
-                <span class="inline-block mt-1 text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
-                  ${lang === 'id' ? med.form_id : med.form_en}
-                </span>
+                <div class="flex flex-wrap gap-1 mt-1">
+                  <span class="inline-block text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
+                    ${lang === 'id' ? med.form_id : med.form_en}
+                  </span>
+                  ${catBadge}
+                </div>
               </div>
               <div class="text-right flex-shrink-0">
                 <p class="text-teal-700 font-bold text-sm">${this.fmt(med.price)}</p>
@@ -777,6 +860,14 @@ const App = {
         <!-- Address -->
         <div class="mb-6">
           <label class="block text-sm font-semibold text-slate-700 mb-2">${t('addressLabel')}</label>
+
+          <!-- Map -->
+          <div class="mb-3">
+            <p class="text-xs text-slate-400 mb-1.5">📍 ${t('mapLabel')}</p>
+            <div id="deliveryMap" class="w-full rounded-xl border border-slate-200 overflow-hidden" style="height:200px; z-index:0;"></div>
+            <p class="text-[10px] text-slate-400 mt-1">${t('mapHint')}</p>
+          </div>
+
           <textarea id="inputAddress" rows="3"
             placeholder="${t('addressPlaceholder')}"
             class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm resize-none transition-colors"
@@ -937,6 +1028,18 @@ const App = {
         on('btnStart', 'click', () => this.navigate('consultation'));
         break;
 
+      case 'doctorOffer':
+        on('btnDoctorYes', 'click', () => {
+          const modal = document.getElementById('doctorModal');
+          if (modal) modal.classList.remove('hidden');
+        });
+        on('btnDoctorNo', 'click', () => this.navigate('searching'));
+        on('btnDoctorClose', 'click', () => {
+          const modal = document.getElementById('doctorModal');
+          if (modal) modal.classList.add('hidden');
+        });
+        break;
+
       case 'consultation':
         on('btnSubmitConsult', 'click', this.handleSubmitConsult);
         onAll('.symptom-chip', 'click', this.handleSymptomToggle);
@@ -963,6 +1066,9 @@ const App = {
             const key = id === 'inputAge' ? 'age' : 'weight';
             this.state.patient[key] = e.target.value;
           });
+        });
+        on('inputCustomSymptoms', 'input', (e) => {
+          this.state.customSymptoms = e.target.value;
         });
         break;
 
@@ -994,14 +1100,16 @@ const App = {
         onAll('.courier-btn', 'click', this.handleCourierSelect);
         on('inputAddress', 'input', (e) => { this.state.deliveryAddress = e.target.value; });
         on('btnConfirmOrder', 'click', this.handleConfirmOrder);
+        this.initDeliveryMap();
         break;
 
       case 'confirmation':
         on('btnHome', 'click', () => {
-          // Reset everything
+          // Reset everything except persisted profile
           this.state.screen = 'welcome';
           this.state.cart = [];
           this.state.symptoms = [];
+          this.state.customSymptoms = '';
           this.state.patient = { age: '', weight: '', allergies: [] };
           this.state.recommendations = [];
           this.state.selectedPayment = null;
@@ -1009,6 +1117,7 @@ const App = {
           this.state.deliveryAddress = '';
           this.state.selectedDelivery = null;
           this.state.orderNumber = null;
+          this.state.profileLoadedFromStorage = false;
           this.navigate('welcome');
         });
         on('btnTrack', 'click', () => {
@@ -1028,6 +1137,7 @@ const App = {
   handleBack() {
     const backMap = {
       consultation: 'welcome',
+      doctorOffer: 'consultation',
       recommendations: 'consultation',
       cart: 'recommendations',
       payment: 'cart',
@@ -1084,7 +1194,8 @@ const App = {
     } else { showErr('errSymptoms', false); }
 
     if (!valid) return;
-    this.navigate('searching');
+    this.saveProfile();
+    this.navigate('doctorOffer');
   },
 
   handleAddToCart(e) {
@@ -1207,9 +1318,42 @@ const App = {
     if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
     setTimeout(() => this.navigate('confirmation'), 800);
   },
+
+  initDeliveryMap() {
+    const container = document.getElementById('deliveryMap');
+    if (!container || typeof L === 'undefined') return;
+    // Prevent double init
+    if (container._leaflet_id) return;
+
+    const jakarta = [-6.2088, 106.8456];
+    const map = L.map('deliveryMap', { zoomControl: true }).setView(jakarta, 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19,
+    }).addTo(map);
+
+    let marker = null;
+    map.on('click', (e) => {
+      const { lat, lng } = e.latlng;
+      if (marker) { marker.setLatLng(e.latlng); }
+      else { marker = L.marker(e.latlng).addTo(map); }
+      const addrEl = document.getElementById('inputAddress');
+      if (addrEl && !addrEl.value.trim()) {
+        addrEl.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        this.state.deliveryAddress = addrEl.value;
+      }
+    });
+  },
 };
 
 /* ─────────────────────────────────────────────
    BOOT
 ───────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => App.render());
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = App.loadProfile();
+  if (saved) {
+    App.state.patient = saved;
+    App.state.profileLoadedFromStorage = true;
+  }
+  App.render();
+});

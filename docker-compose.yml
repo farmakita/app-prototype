@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:80"
+
+  node:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: ["node", "--check", "js/app.js"]
