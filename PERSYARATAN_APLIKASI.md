@@ -163,10 +163,108 @@ Pengguna memilih metode pengiriman setelah pembayaran.
 
 ## 7. Pertimbangan Teknologi
 
-- **Backend:** Node.js / Python (FastAPI)  
-- **Database:** SQLite (berbasis file, biaya rendah, cocok untuk MVP; dapat di-upgrade ke PostgreSQL di masa depan)  
+- **Backend:** Node.js / Python (FastAPI)
+- **Database:** SQLite (berbasis file, biaya rendah, cocok untuk MVP; dapat di-upgrade ke PostgreSQL di masa depan)
 - **API:**
-  - Pembayaran (Midtrans, Xendit)  
-  - Logistik (RajaOngkir, Gojek/Grab API)  
-- **Frontend:** React / React Native  
-- **Deployment:** Docker-based container  
+  - Pembayaran (Midtrans, Xendit)
+  - Logistik (RajaOngkir, Gojek/Grab API)
+- **Frontend:** React / React Native
+- **Deployment:** Docker-based container
+
+---
+
+## 8. Perubahan Versi 2 (V2)
+
+Bagian ini merangkum seluruh perubahan dan penambahan fitur yang diusulkan dalam dokumen spesifikasi Versi 2 dibandingkan Versi 1.
+
+---
+
+### 8.1 Konsultasi Berbasis Gejala — Penambahan Input Teks Bebas
+
+**Perubahan pada §2.2 (Logika Mesin Rekomendasi) dan §3 (Alur Pengguna — Langkah 3):**
+
+Selain memilih gejala dari daftar kategori yang tersedia, pengguna kini juga dapat **mengetik gejala secara bebas** (free-text input). Ini memberikan fleksibilitas bagi pengguna yang gejalanya tidak tercakup dalam pilihan yang ada.
+
+---
+
+### 8.2 Rekomendasi Obat — Cakupan Harga & Kategori Obat
+
+**Perubahan pada §2.2 (Output dan Batasan):**
+
+**Cakupan harga:**
+- Daftar rekomendasi obat kini wajib menampilkan **minimal 3 pilihan**, mulai dari obat paten (bermerek) hingga obat generik, agar pengguna dapat memilih sesuai kemampuan finansial mereka.
+
+**Kategori obat yang boleh ditampilkan:**
+- Aplikasi hanya boleh menampilkan obat dalam kategori:
+  - Obat bebas (logo lingkaran hijau)
+  - Obat bebas terbatas (logo lingkaran biru)
+  - Obat herbal / jamu
+- **Obat keras tidak boleh ditampilkan** kecuali melalui jalur resep digital dari dokter berlisensi (lihat §8.5 di bawah).
+
+**Penambahan field output:**
+- Harga produk kini menjadi bagian wajib dari informasi obat yang ditampilkan.
+
+---
+
+### 8.3 Katalog Produk — Informasi Cara Penggunaan Obat
+
+**Perubahan pada §2.3 (Informasi Produk):**
+
+Halaman detail produk kini wajib menyertakan **aturan minum atau cara penggunaan obat** (misalnya: "diminum 3x sehari setelah makan"). Informasi ini sebelumnya tidak tercantum secara eksplisit sebagai field wajib.
+
+---
+
+### 8.4 Pengiriman & Logistik — Peta pada Input Alamat
+
+**Perubahan pada §2.5 (Fitur Pengiriman):**
+
+Saat pengguna mengisi alamat pengiriman, aplikasi kini harus **menampilkan peta interaktif** untuk membantu pengguna menentukan lokasi pengiriman secara akurat. Integrasi peta (misalnya Google Maps API) diperlukan untuk fitur ini.
+
+---
+
+### 8.5 Alur Pengguna — Profil Tersimpan & Konsultasi Dokter
+
+**Perubahan pada §3 (Alur Pengguna):**
+
+Dua perubahan signifikan pada alur pengguna:
+
+1. **Data pribadi tersimpan (Langkah 2):**
+   Data pribadi pengguna — termasuk usia, berat badan, dan **riwayat alergi** — disimpan di dalam aplikasi. Pada penggunaan berikutnya, pengguna tidak perlu mengisi ulang data tersebut. Ini memerlukan fitur akun/profil pengguna.
+
+2. **Pilihan konsultasi dokter (Langkah 4 baru):**
+   Sebelum menampilkan rekomendasi obat, aplikasi menampilkan **opsi konsultasi langsung dengan dokter** apabila pengguna merasa membutuhkan penanganan lebih lanjut. Alur pengguna kini menjadi 11 langkah (sebelumnya 9 langkah).
+
+---
+
+### 8.6 Pengembangan Masa Depan — Klarifikasi Fitur Penting
+
+**Perubahan pada §6 (Pengembangan di Masa Depan):**
+
+Dua fitur opsional mendapat penjelasan lebih rinci:
+
+1. **Chat dengan apoteker/dokter berlisensi:**
+   Fitur ini bukan sekadar nilai tambah — ini adalah **syarat regulasi** untuk dapat menjual obat keras di dalam aplikasi. Alurnya adalah:
+   - Pengguna berkonsultasi dengan dokter berlisensi melalui aplikasi
+   - Dokter dapat menerbitkan **resep digital** langsung di dalam aplikasi
+   - Pengguna dapat langsung membeli obat keras berdasarkan resep tersebut
+
+   Referensi aplikasi serupa yang sudah beroperasi di Indonesia: **HALODOC**.
+
+2. **Langganan obat rutin:**
+   Aplikasi dapat memberikan **notifikasi atau saran pembelian ulang** secara otomatis apabila obat rutin yang dibeli pengguna diperkirakan sudah habis berdasarkan dosis dan tanggal pembelian terakhir.
+
+---
+
+### Ringkasan Perubahan V1 → V2
+
+| Area | V1 | V2 |
+|---|---|---|
+| Input gejala | Pilihan kategori saja | Pilihan kategori + teks bebas |
+| Jumlah rekomendasi obat | Tidak ditentukan | Minimal 3 pilihan (paten s/d generik) |
+| Kategori obat | Tidak dibatasi | Hanya bebas, bebas terbatas, herbal |
+| Info produk | Nama, harga, stok, deskripsi | + Aturan minum / cara penggunaan |
+| Input alamat pengiriman | Form teks biasa | Form teks + peta interaktif |
+| Data pengguna | Diisi ulang setiap sesi | Tersimpan di profil (termasuk alergi) |
+| Alur konsultasi dokter | Tidak ada | Ditawarkan sebelum rekomendasi obat |
+| Fitur dokter berlisensi | Opsional masa depan | Diprioritaskan (syarat jual obat keras) |
+| Langganan obat rutin | Disebutkan singkat | + Notifikasi otomatis saat stok habis |
