@@ -1193,7 +1193,11 @@ const App = {
       showErr('errSymptoms', true); valid = false;
     } else { showErr('errSymptoms', false); }
 
-    if (!valid) return;
+    if (!valid) {
+      const firstErr = document.querySelector('#errAge:not(.hidden), #errWeight:not(.hidden), #errSymptoms:not(.hidden)');
+      if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
     this.saveProfile();
     this.navigate('doctorOffer');
   },
