@@ -864,6 +864,18 @@ const App = {
           <!-- Map -->
           <div class="mb-3">
             <p class="text-xs text-slate-400 mb-1.5">📍 ${t('mapLabel')}</p>
+            <div class="flex gap-2 mb-2">
+              <input id="mapSearch" type="text"
+                placeholder="${this.state.lang === 'id' ? 'Cari nama gedung atau alamat...' : 'Search building name or address...'}"
+                class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm transition-colors">
+              <button id="btnMapSearch"
+                class="bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0 active:bg-teal-700 transition-colors">
+                ${this.state.lang === 'id' ? 'Cari' : 'Search'}
+              </button>
+            </div>
+            <div id="mapSearchError" class="hidden text-red-500 text-xs mb-1.5">
+              ${this.state.lang === 'id' ? 'Lokasi tidak ditemukan. Coba nama yang lebih spesifik.' : 'Location not found. Try a more specific name.'}
+            </div>
             <div id="deliveryMap" class="w-full rounded-xl border border-slate-200 overflow-hidden" style="height:200px; z-index:0;"></div>
             <p class="text-[10px] text-slate-400 mt-1">${t('mapHint')}</p>
           </div>
@@ -1100,6 +1112,8 @@ const App = {
         onAll('.courier-btn', 'click', this.handleCourierSelect);
         on('inputAddress', 'input', (e) => { this.state.deliveryAddress = e.target.value; });
         on('btnConfirmOrder', 'click', this.handleConfirmOrder);
+        on('btnMapSearch', 'click', () => this.handleMapSearch());
+        on('mapSearch', 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this.handleMapSearch(); } });
         this.initDeliveryMap();
         break;
 
@@ -1326,27 +1340,63 @@ const App = {
   initDeliveryMap() {
     const container = document.getElementById('deliveryMap');
     if (!container || typeof L === 'undefined') return;
-    // Prevent double init
     if (container._leaflet_id) return;
 
     const jakarta = [-6.2088, 106.8456];
-    const map = L.map('deliveryMap', { zoomControl: true }).setView(jakarta, 13);
+    this._map = L.map('deliveryMap', { zoomControl: true }).setView(jakarta, 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
       maxZoom: 19,
-    }).addTo(map);
+    }).addTo(this._map);
 
-    let marker = null;
-    map.on('click', (e) => {
+    this._mapMarker = null;
+    this._map.on('click', (e) => {
       const { lat, lng } = e.latlng;
-      if (marker) { marker.setLatLng(e.latlng); }
-      else { marker = L.marker(e.latlng).addTo(map); }
+      if (this._mapMarker) { this._mapMarker.setLatLng(e.latlng); }
+      else { this._mapMarker = L.marker(e.latlng).addTo(this._map); }
       const addrEl = document.getElementById('inputAddress');
       if (addrEl && !addrEl.value.trim()) {
         addrEl.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
         this.state.deliveryAddress = addrEl.value;
       }
     });
+  },
+
+  handleMapSearch() {
+    const input = document.getElementById('mapSearch');
+    const errEl = document.getElementById('mapSearchError');
+    const btn = document.getElementById('btnMapSearch');
+    const query = input?.value.trim();
+    if (!query || !this._map) return;
+
+    if (errEl) errEl.classList.add('hidden');
+    if (btn) { btn.textContent = '…'; btn.disabled = true; }
+
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=id`;
+    fetch(url, { headers: { 'Accept-Language': 'id', 'User-Agent': 'ApoMutiara/1.0' } })
+      .then(r => r.json())
+      .then(results => {
+        if (btn) { btn.textContent = this.state.lang === 'id' ? 'Cari' : 'Search'; btn.disabled = false; }
+        if (!results.length) {
+          if (errEl) errEl.classList.remove('hidden');
+          return;
+        }
+        const { lat, lon, display_name } = results[0];
+        const latlng = [parseFloat(lat), parseFloat(lon)];
+        this._map.setView(latlng, 17);
+        if (this._mapMarker) { this._mapMarker.setLatLng(latlng); }
+        else { this._mapMarker = L.marker(latlng).addTo(this._map); }
+        this._mapMarker.bindPopup(display_name).openPopup();
+        const addrEl = document.getElementById('inputAddress');
+        if (addrEl) {
+          addrEl.value = display_name;
+          this.state.deliveryAddress = display_name;
+        }
+      })
+      .catch(() => {
+        if (btn) { btn.textContent = this.state.lang === 'id' ? 'Cari' : 'Search'; btn.disabled = false; }
+        if (errEl) errEl.classList.remove('hidden');
+      });
   },
 };
 
