@@ -302,7 +302,7 @@ const App = {
         <!-- Age + Weight -->
         <div class="grid grid-cols-2 gap-3 mb-5">
           <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1.5">${t('ageLabel')}</label>
+            <label class="block text-sm font-semibold text-slate-700 mb-1.5">${t('ageLabel')} <span class="text-red-500">*</span></label>
             <input id="inputAge" type="number" min="0" max="120" step="1"
               placeholder="${t('agePlaceholder')}" value="${age}"
               class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm transition-colors"
@@ -310,7 +310,7 @@ const App = {
             <span id="errAge" class="hidden text-red-500 text-xs mt-1">${t('errAge')}</span>
           </div>
           <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1.5">${t('weightLabel')}</label>
+            <label class="block text-sm font-semibold text-slate-700 mb-1.5">${t('weightLabel')} <span class="text-red-500">*</span></label>
             <input id="inputWeight" type="number" min="1" max="300" step="0.1"
               placeholder="${t('weightPlaceholder')}" value="${weight}"
               class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm transition-colors"
