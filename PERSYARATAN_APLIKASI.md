@@ -123,35 +123,45 @@ Pengguna dapat langsung membeli obat yang direkomendasikan.
 ### 2.5 Pengiriman & Logistik
 
 **Deskripsi:**  
-Pengguna memilih metode pengiriman setelah pembayaran.
+Pengguna memilih metode pengiriman dan memasukkan alamat **sebelum** pembayaran. Total ongkir ditampilkan secara transparan di layar pembayaran sebelum pengguna mengkonfirmasi.
 
 **Opsi Pengiriman:**
-- Kurir standar:
-  - JNE  
-  - J&T  
-  - SiCepat  
-- Pengiriman cepat:
-  - Gojek  
-  - Grab  
+- Reguler (2–5 hari):
+  - JNE REG
+  - J&T Express
+  - SiCepat REG
+  - Pos Indonesia
+- Kilat (1 hari):
+  - JNE YES
+  - SiCepat BEST
+  - J&T Same Day
+- Instan (1–3 jam):
+  - GoSend Instant
+  - Grab Express
+  - ShopeeExpress
+- Ambil Sendiri (gratis):
+  - Ambil langsung di Apotek Mutiara
 
 **Fitur:**
-- Perhitungan ongkir  
-- Estimasi waktu pengiriman  
-- Pelacakan real-time (jika didukung API kurir)  
+- Input alamat dengan peta interaktif (cari nama gedung/lokasi)
+- Perhitungan ongkir per kurir
+- Estimasi waktu pengiriman
+- Pelacakan real-time (jika didukung API kurir)
 
 ---
 
 ## 3. Alur Pengguna
 
-1. Pengguna membuka aplikasi  
-2. Menginput gejala + data pribadi  
-3. Mendapatkan rekomendasi obat  
-4. Memilih produk  
-5. Lanjut ke checkout  
-6. Memilih metode pembayaran  
-7. Menyelesaikan pembayaran  
-8. Memilih opsi pengiriman  
-9. Mendapatkan konfirmasi dan pelacakan pesanan  
+1. Pengguna membuka aplikasi
+2. Mengisi data pasien (usia, berat badan, alergi) dan memilih gejala
+3. Ditawarkan opsi konsultasi dokter (jika diperlukan)
+4. Sistem mencari dan menampilkan rekomendasi obat OTC
+5. Pengguna menambahkan obat ke keranjang
+6. Meninjau keranjang belanja
+7. **Memilih metode pengiriman dan mengisi alamat** (atau pilih Ambil Sendiri)
+8. **Memilih metode pembayaran** — total ditampilkan termasuk ongkir
+9. Pembayaran dikonfirmasi
+10. Pengguna menerima nomor pesanan dan estimasi tiba
 
 ---
 
@@ -258,8 +268,8 @@ Dua perubahan signifikan pada alur pengguna:
 1. **Data pribadi tersimpan (Langkah 2):**
    Data pribadi pengguna — termasuk usia, berat badan, dan **riwayat alergi** — disimpan di dalam aplikasi. Pada penggunaan berikutnya, pengguna tidak perlu mengisi ulang data tersebut. Ini memerlukan fitur akun/profil pengguna.
 
-2. **Pilihan konsultasi dokter (Langkah 4 baru):**
-   Sebelum menampilkan rekomendasi obat, aplikasi menampilkan **opsi konsultasi langsung dengan dokter** apabila pengguna merasa membutuhkan penanganan lebih lanjut. Alur pengguna kini menjadi 11 langkah (sebelumnya 9 langkah).
+2. **Pilihan konsultasi dokter (Langkah 3 baru):**
+   Sebelum menampilkan rekomendasi obat, aplikasi menampilkan **opsi konsultasi langsung dengan dokter** apabila pengguna merasa membutuhkan penanganan lebih lanjut. Alur pengguna kini menjadi 10 langkah (sebelumnya 9 langkah).
 
 ---
 
@@ -292,6 +302,8 @@ Dua fitur opsional mendapat penjelasan lebih rinci:
 | Info produk | Nama, harga, stok, deskripsi | + Aturan minum / cara penggunaan |
 | Input alamat pengiriman | Form teks biasa | Form teks + peta interaktif |
 | Data pengguna | Diisi ulang setiap sesi | Tersimpan di profil (termasuk alergi) |
+| Urutan checkout | Keranjang → Bayar → Kirim | Keranjang → **Kirim → Bayar** (total ongkir tampil di layar bayar) |
+| Opsi pengiriman | JNE, J&T, SiCepat, Gojek, Grab | + Pos Indonesia, SiCepat BEST, JNE YES, J&T Same Day, ShopeeExpress, **Ambil Sendiri (gratis)** |
 | Alur konsultasi dokter | Tidak ada | Ditawarkan sebelum rekomendasi obat |
 | Fitur dokter berlisensi | Opsional masa depan | Diprioritaskan (syarat jual obat keras) |
 | Langganan obat rutin | Disebutkan singkat | + Notifikasi otomatis saat stok habis |
