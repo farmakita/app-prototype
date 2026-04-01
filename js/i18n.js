@@ -7,8 +7,7 @@ const TRANSLATIONS = {
     langToggle: 'English',
 
     // Steps
-    step1: 'Konsultasi', step2: 'Rekomendasi', step3: 'Keranjang',
-    step4: 'Pembayaran', step5: 'Pengiriman',
+    step1: 'Konsultasi', step2: 'Rekomendasi', step3: 'Keranjang', step4: 'Pengiriman', step5: 'Pembayaran',
 
     // Welcome
     welcomeHero: 'Butuh Obat?',
@@ -85,9 +84,16 @@ const TRANSLATIONS = {
     emptyCart: 'Keranjang Anda kosong',
     emptyCartSub: 'Tambahkan obat dari halaman rekomendasi',
     backToRec: 'Kembali ke Rekomendasi',
-    subtotal: 'Subtotal', shippingEst: 'Ongkir (dipilih berikutnya)',
-    total: 'Total', checkoutBtn: 'Lanjut ke Pembayaran',
+    subtotal: 'Subtotal', shippingEst: 'Ongkir',
+    total: 'Total', checkoutBtn: 'Lanjut ke Pengiriman',
+    continueToPayment: 'Lanjut ke Pembayaran',
     remove: 'Hapus',
+
+    // Payment & Delivery combined
+    payDelivTitle: 'Pembayaran & Pengiriman',
+    payDelivSub: 'Aman & terenkripsi · Pilih pengiriman sesuai kebutuhan Anda',
+    pickupGroup: '🏪 Ambil Sendiri',
+    pickupNote: 'Ambil pesanan langsung di Apotek Mutiara. Tidak ada biaya pengiriman.',
 
     // Payment
     payTitle: 'Pilih Metode Pembayaran',
@@ -104,7 +110,7 @@ const TRANSLATIONS = {
     selectPayFirst: 'Pilih metode pembayaran terlebih dahulu',
 
     // Delivery
-    delivTitle: 'Pilih Metode Pengiriman',
+    delivTitle: 'Pilih Pengiriman',
     delivSub: 'Pilih kurir yang sesuai kebutuhan Anda',
     addressLabel: 'Alamat Pengiriman',
     addressPlaceholder: 'Masukkan alamat lengkap (jalan, nomor, RT/RW, kelurahan, kota, kode pos)…',
@@ -136,8 +142,7 @@ const TRANSLATIONS = {
     tagline: 'Easy & Trusted Medication Consultation',
     langToggle: 'Indonesia',
 
-    step1: 'Consult', step2: 'Recommend', step3: 'Cart',
-    step4: 'Payment', step5: 'Delivery',
+    step1: 'Consult', step2: 'Recommend', step3: 'Cart', step4: 'Delivery', step5: 'Payment',
 
     welcomeHero: 'Need Medicine?',
     welcomeSubHero: 'Consult your symptoms and get accurate medication recommendations, delivered straight to your door.',
@@ -208,9 +213,15 @@ const TRANSLATIONS = {
     emptyCart: 'Your cart is empty',
     emptyCartSub: 'Add medications from the recommendations page',
     backToRec: 'Back to Recommendations',
-    subtotal: 'Subtotal', shippingEst: 'Shipping (selected next)',
-    total: 'Total', checkoutBtn: 'Proceed to Payment',
+    subtotal: 'Subtotal', shippingEst: 'Shipping',
+    total: 'Total', checkoutBtn: 'Proceed to Delivery',
+    continueToPayment: 'Continue to Payment',
     remove: 'Remove',
+
+    payDelivTitle: 'Payment & Delivery',
+    payDelivSub: 'Secure & encrypted · Choose delivery to suit your needs',
+    pickupGroup: '🏪 Pickup In-store',
+    pickupNote: 'Pick up your order directly at Apotek Mutiara. No delivery fee.',
 
     payTitle: 'Select Payment Method',
     paySub: 'All transactions are encrypted and secure',
@@ -225,7 +236,7 @@ const TRANSLATIONS = {
     processingPay: 'Processing payment…',
     selectPayFirst: 'Please select a payment method first',
 
-    delivTitle: 'Select Delivery Method',
+    delivTitle: 'Select Delivery',
     delivSub: 'Choose the courier that best suits your needs',
     addressLabel: 'Delivery Address',
     addressPlaceholder: 'Enter full address (street, number, area, city, postal code)…',

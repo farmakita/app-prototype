@@ -12,7 +12,7 @@ run:
 stop:
 	docker compose down
 
-restart: stop run
+restart: stop build run
 
 logs:
 	docker compose logs -f app

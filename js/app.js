@@ -14,6 +14,7 @@ const COURIERS = [
   { id: 'gosend',       group: 'instant',  name: 'GoSend Instant', badge: '🟢',   price: 25000, est_id: '1–2 jam',   est_en: '1–2 hours' },
   { id: 'grab',         group: 'instant',  name: 'Grab Express',   badge: '🟢',   price: 27000, est_id: '1–2 jam',   est_en: '1–2 hours' },
   { id: 'shopee_inst',  group: 'instant',  name: 'ShopeeExpress',  badge: '🟠',   price: 20000, est_id: '2–3 jam',   est_en: '2–3 hours' },
+  { id: 'pickup',       group: 'pickup',   name: 'Ambil Sendiri',  badge: '🏪',   price: 0,     est_id: 'Di Apotek', est_en: 'In-store' },
 ];
 
 /* ─────────────────────────────────────────────
@@ -83,7 +84,7 @@ const App = {
   buildApp() {
     const s = this.state.screen;
     const showHeader = !['welcome', 'searching'].includes(s);
-    const STEP_SCREENS = ['consultation','recommendations','cart','payment','delivery'];
+    const STEP_SCREENS = ['consultation','recommendations','cart','delivery','payment'];
     const stepIdx = s === 'doctorOffer' ? 0 : STEP_SCREENS.indexOf(s);
 
     return `
@@ -144,8 +145,8 @@ const App = {
       case 'searching':       return this.screenSearching();
       case 'recommendations': return this.screenRecommendations();
       case 'cart':            return this.screenCart();
-      case 'payment':         return this.screenPayment();
       case 'delivery':        return this.screenDelivery();
+      case 'payment':         return this.screenPayment();
       case 'confirmation':    return this.screenConfirmation();
       default:                return this.screenWelcome();
     }
@@ -639,6 +640,230 @@ const App = {
   },
 
   /* ─────────────────────────────────────────────
+     SCREEN: PAYMENT & DELIVERY (combined)
+  ───────────────────────────────────────────── */
+  screenPaymentDelivery() {
+    const { selectedPayment, paymentSubData, selectedDelivery, deliveryAddress } = this.state;
+    const lang = this.state.lang;
+    const isPickup = selectedDelivery?.id === 'pickup';
+
+    /* ── Payment method groups ── */
+    const METHOD_GROUPS = [
+      { key: 'groupCard',    methods: [{ id: 'credit', icon: '💳', labelKey: 'payCredit', color: 'bg-blue-50' }, { id: 'debit', icon: '🏦', labelKey: 'payDebit', color: 'bg-indigo-50' }] },
+      { key: 'groupEwallet', methods: [{ id: 'gopay', icon: '🟢', labelKey: 'payGopay', color: 'bg-green-50' }, { id: 'ovo', icon: '🟣', labelKey: 'payOvo', color: 'bg-purple-50' }, { id: 'dana', icon: '🔵', labelKey: 'payDana', color: 'bg-blue-50' }, { id: 'linkaja', icon: '🔴', labelKey: 'payLinkaja', color: 'bg-red-50' }] },
+      { key: 'groupQRIS',    methods: [{ id: 'qris', icon: '📱', labelKey: 'payQRIS', color: 'bg-slate-50' }] },
+      { key: 'groupBank',    methods: [{ id: 'bca', icon: '🏛️', labelKey: 'payBca', color: 'bg-blue-50' }, { id: 'bni', icon: '🏛️', labelKey: 'payBni', color: 'bg-amber-50' }, { id: 'bri', icon: '🏛️', labelKey: 'payBri', color: 'bg-sky-50' }] },
+    ];
+
+    let subForm = '';
+    if (selectedPayment === 'credit' || selectedPayment === 'debit') {
+      subForm = `
+        <div class="bg-teal-50 rounded-xl p-4 mt-3">
+          <div class="mb-3">
+            <label class="text-xs font-semibold text-slate-600 block mb-1">${t('cardNumber')}</label>
+            <input id="cardNum" type="text" inputmode="numeric" maxlength="19" placeholder="0000 0000 0000 0000"
+              value="${paymentSubData.cardNum || ''}" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div class="grid grid-cols-2 gap-2 mb-3">
+            <div>
+              <label class="text-xs font-semibold text-slate-600 block mb-1">${t('cardExpiry')}</label>
+              <input id="cardExp" type="text" placeholder="MM/YY" maxlength="5"
+                value="${paymentSubData.cardExp || ''}" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-600 block mb-1">${t('cardCVV')}</label>
+              <input id="cardCvv" type="password" maxlength="4" placeholder="•••"
+                value="${paymentSubData.cardCvv || ''}" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+            </div>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-600 block mb-1">${t('cardName')}</label>
+            <input id="cardName" type="text" placeholder="NAMA LENGKAP"
+              value="${paymentSubData.cardName || ''}" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm uppercase">
+          </div>
+        </div>`;
+    } else if (['gopay','ovo','dana','linkaja'].includes(selectedPayment)) {
+      subForm = `
+        <div class="bg-teal-50 rounded-xl p-4 mt-3">
+          <label class="text-xs font-semibold text-slate-600 block mb-1">${t('phoneWallet')}</label>
+          <input id="phoneWallet" type="tel" inputmode="numeric" placeholder="08xxxxxxxxxx"
+            value="${paymentSubData.phone || ''}" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+        </div>`;
+    } else if (selectedPayment === 'qris') {
+      subForm = `
+        <div class="bg-teal-50 rounded-xl p-4 mt-3 flex flex-col items-center">
+          <div class="w-40 h-40 bg-white border-2 border-dashed border-teal-300 rounded-xl flex items-center justify-center text-5xl mb-2">📲</div>
+          <p class="text-xs text-teal-700 font-medium text-center">
+            ${lang === 'id' ? 'Scan kode QR di bawah dengan aplikasi bank atau e-wallet Anda' : 'Scan the QR code below with your bank or e-wallet app'}
+          </p>
+        </div>`;
+    } else if (['bca','bni','bri'].includes(selectedPayment)) {
+      const vaNumbers = { bca: '8100 4567 8901', bni: '9881 2345 6789', bri: '1023 4567 8901 2345' };
+      subForm = `
+        <div class="bg-teal-50 rounded-xl p-4 mt-3">
+          <p class="text-xs text-slate-500 mb-2">${lang === 'id' ? 'Nomor Virtual Account:' : 'Virtual Account Number:'}</p>
+          <div class="bg-white rounded-lg px-4 py-3 flex items-center justify-between">
+            <span class="font-mono font-bold text-slate-800 text-lg tracking-wider">${vaNumbers[selectedPayment]}</span>
+            <span class="text-xs text-teal-600 font-medium cursor-pointer">${lang === 'id' ? 'Salin' : 'Copy'}</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">
+            ${lang === 'id' ? 'Transfer sebelum 24 jam. Pembayaran otomatis terverifikasi.' : 'Transfer within 24 hours. Payment is automatically verified.'}
+          </p>
+        </div>`;
+    }
+
+    const payGroupsHtml = METHOD_GROUPS.map(group => {
+      const cards = group.methods.map(m => `
+        <button class="select-card pay-method-btn flex flex-col items-center justify-center p-3 rounded-xl border-2 text-center gap-1
+          ${m.color} ${selectedPayment === m.id ? 'selected' : 'border-slate-200'}" data-method="${m.id}">
+          <span class="text-2xl">${m.icon}</span>
+          <span class="text-xs font-semibold text-slate-700">${t(m.labelKey)}</span>
+        </button>`).join('');
+      return `
+        <div class="mb-4">
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">${t(group.key)}</p>
+          <div class="grid grid-cols-4 gap-2">${cards}</div>
+          ${selectedPayment && group.methods.find(m => m.id === selectedPayment) ? subForm : ''}
+        </div>`;
+    }).join('');
+
+    /* ── Courier cards ── */
+    const buildCourierCard = (c) => {
+      const sel = selectedDelivery?.id === c.id;
+      const isFree = c.price === 0;
+      return `
+        <button class="select-card courier-btn w-full flex items-center gap-3 border-2 rounded-xl p-3 text-left transition-all
+          ${sel ? 'selected' : 'border-slate-200 bg-white'}" data-courier-id="${c.id}">
+          <div class="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center flex-shrink-0">
+            ${c.badge.length <= 2 ? `<span class="text-xl">${c.badge}</span>` : `<span class="text-[11px] font-black text-teal-700">${c.badge}</span>`}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-slate-800 text-sm">${c.name}</p>
+            <p class="text-xs text-slate-400">${t('estArrival')}: ${lang === 'id' ? c.est_id : c.est_en}</p>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <p class="font-bold text-sm ${sel ? 'text-teal-600' : isFree ? 'text-green-600' : 'text-slate-700'}">
+              ${isFree ? (lang === 'id' ? 'Gratis' : 'Free') : this.fmt(c.price)}
+            </p>
+            ${sel ? '<div class="w-5 h-5 bg-teal-500 rounded-full flex items-center justify-center mt-1 ml-auto"><svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div>' : ''}
+          </div>
+        </button>`;
+    };
+
+    const deliveryGroupsHtml = [
+      { labelKey: 'regularGroup', couriers: COURIERS.filter(c => c.group === 'regular') },
+      { labelKey: 'expressGroup', couriers: COURIERS.filter(c => c.group === 'express') },
+      { labelKey: 'instantGroup', couriers: COURIERS.filter(c => c.group === 'instant') },
+    ].map(g => `
+      <div class="mb-3">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">${t(g.labelKey)}</p>
+        <div class="flex flex-col gap-2">${g.couriers.map(buildCourierCard).join('')}</div>
+      </div>`).join('');
+
+    const pickupHtml = `
+      <div class="mb-3">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">${t('pickupGroup')}</p>
+        <div class="flex flex-col gap-2">${buildCourierCard(COURIERS.find(c => c.id === 'pickup'))}</div>
+        ${isPickup ? `<p class="text-xs text-slate-400 mt-2 px-1">📍 ${t('pickupNote')}</p>` : ''}
+      </div>`;
+
+    /* ── Address + map (hidden for pickup) ── */
+    const addressSection = isPickup ? '' : `
+      <div class="mb-5">
+        <label class="block text-sm font-semibold text-slate-700 mb-2">${t('addressLabel')}</label>
+        <div class="mb-3">
+          <p class="text-xs text-slate-400 mb-1.5">📍 ${t('mapLabel')}</p>
+          <div class="flex gap-2 mb-2">
+            <input id="mapSearch" type="text"
+              placeholder="${lang === 'id' ? 'Cari nama gedung atau alamat...' : 'Search building name or address...'}"
+              class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm transition-colors">
+            <button id="btnMapSearch"
+              class="bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0 active:bg-teal-700 transition-colors">
+              ${lang === 'id' ? 'Cari' : 'Search'}
+            </button>
+          </div>
+          <div id="mapSearchError" class="hidden text-red-500 text-xs mb-1.5">
+            ${lang === 'id' ? 'Lokasi tidak ditemukan. Coba nama yang lebih spesifik.' : 'Location not found. Try a more specific name.'}
+          </div>
+          <div id="deliveryMap" class="w-full rounded-xl border border-slate-200 overflow-hidden" style="height:200px; z-index:0;"></div>
+          <p class="text-[10px] text-slate-400 mt-1">${t('mapHint')}</p>
+        </div>
+        <textarea id="inputAddress" rows="3"
+          placeholder="${t('addressPlaceholder')}"
+          class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm resize-none transition-colors"
+        >${deliveryAddress}</textarea>
+        <span id="errAddress" class="hidden text-red-500 text-xs mt-1">${t('errAddress')}</span>
+      </div>`;
+
+    /* ── Order summary ── */
+    const summaryItems = this.state.cart.map(item => `
+      <div class="flex justify-between items-center py-1.5">
+        <span class="text-xs text-slate-600 truncate max-w-[60%]">${item.med.brand} × ${item.qty}</span>
+        <span class="text-xs font-semibold text-slate-700">${this.fmt(item.med.price * item.qty)}</span>
+      </div>`).join('');
+
+    const shippingFee = selectedDelivery ? (isPickup ? 0 : selectedDelivery.price) : null;
+    const total = this.cartTotal() + (shippingFee || 0);
+
+    return `
+      <div class="px-4 pt-5 pb-44">
+        <h2 class="text-xl font-bold text-slate-800 mb-1">${t('payDelivTitle')}</h2>
+        <p class="text-sm text-slate-500 mb-5">🔒 ${t('payDelivSub')}</p>
+
+        <!-- Order summary -->
+        <details class="bg-slate-50 rounded-xl mb-5 overflow-hidden">
+          <summary class="flex items-center justify-between px-4 py-3 cursor-pointer text-sm font-semibold text-slate-700">
+            <span>🧾 ${t('orderSummary')}</span>
+            <span class="text-teal-600 font-black">${this.fmt(this.cartTotal())}</span>
+          </summary>
+          <div class="px-4 pb-3 border-t border-slate-200 pt-2">
+            ${summaryItems}
+            <div class="flex justify-between items-center pt-2 border-t border-slate-100 mt-1">
+              <span class="text-xs font-bold text-slate-700">${t('subtotal')}</span>
+              <span class="text-sm font-black text-teal-600">${this.fmt(this.cartTotal())}</span>
+            </div>
+          </div>
+        </details>
+
+        <!-- Payment methods -->
+        <p class="text-sm font-bold text-slate-700 mb-3">💳 ${t('payTitle')}</p>
+        ${payGroupsHtml}
+        <span id="errPayment" class="hidden text-red-500 text-xs block mb-4">${t('selectPayFirst')}</span>
+
+        <!-- Delivery methods -->
+        <p class="text-sm font-bold text-slate-700 mb-3">🚚 ${t('delivTitle')}</p>
+        ${deliveryGroupsHtml}
+        ${pickupHtml}
+        <span id="errDelivery" class="hidden text-red-500 text-xs block mb-4">${t('errDelivery')}</span>
+
+        <!-- Address + map -->
+        ${addressSection}
+      </div>
+
+      <div class="bottom-bar">
+        <div class="flex justify-between text-xs text-slate-500 mb-2">
+          <span>${t('subtotal')}</span>
+          <span class="font-semibold text-slate-700">${this.fmt(this.cartTotal())}</span>
+        </div>
+        <div class="flex justify-between text-xs text-slate-500 mb-3">
+          <span>${t('courierPrice')}</span>
+          <span class="font-semibold ${isPickup ? 'text-green-600' : 'text-slate-700'}">
+            ${shippingFee === null ? '—' : isPickup ? (lang === 'id' ? 'Gratis' : 'Free') : this.fmt(shippingFee)}
+          </span>
+        </div>
+        <div class="flex justify-between font-bold text-slate-800 mb-3">
+          <span>${t('total')}</span>
+          <span class="text-teal-600 text-lg">${selectedDelivery ? this.fmt(total) : '—'}</span>
+        </div>
+        <button id="btnConfirmOrder"
+          class="w-full bg-teal-600 text-white font-bold py-3.5 rounded-xl text-sm">
+          ${t('confirmOrder')}
+        </button>
+      </div>
+    `;
+  },
+
+  /* ─────────────────────────────────────────────
      SCREEN: PAYMENT
   ───────────────────────────────────────────── */
   screenPayment() {
@@ -768,7 +993,12 @@ const App = {
       `;
     }).join('');
 
-    // Order summary
+    // Order summary with shipping
+    const { selectedDelivery } = this.state;
+    const isPickup = selectedDelivery?.id === 'pickup';
+    const shippingFee = selectedDelivery ? (isPickup ? 0 : selectedDelivery.price) : 0;
+    const grandTotal = this.cartTotal() + shippingFee;
+
     const summaryItems = this.state.cart.map(item => `
       <div class="flex justify-between items-center py-1.5">
         <span class="text-xs text-slate-600 truncate max-w-[60%]">${item.med.brand} × ${item.qty}</span>
@@ -776,25 +1006,41 @@ const App = {
       </div>
     `).join('');
 
+    const lang = this.state.lang;
+
     return `
       <div class="px-4 pt-5 pb-40">
         <h2 class="text-xl font-bold text-slate-800 mb-1">${t('payTitle')}</h2>
         <p class="text-sm text-slate-500 mb-5">🔒 ${t('paySub')}</p>
 
-        <!-- Order summary collapsed -->
-        <details class="bg-slate-50 rounded-xl mb-5 overflow-hidden">
-          <summary class="flex items-center justify-between px-4 py-3 cursor-pointer text-sm font-semibold text-slate-700">
-            <span>🧾 ${t('orderSummary')}</span>
-            <span class="text-teal-600 font-black">${this.fmt(this.cartTotal())}</span>
-          </summary>
-          <div class="px-4 pb-3 border-t border-slate-200 pt-2">
-            ${summaryItems}
-            <div class="flex justify-between items-center pt-2 border-t border-slate-100 mt-1">
-              <span class="text-xs font-bold text-slate-700">${t('total')}</span>
-              <span class="text-sm font-black text-teal-600">${this.fmt(this.cartTotal())}</span>
+        <!-- Order summary with shipping -->
+        <div class="bg-slate-50 rounded-xl mb-5 overflow-hidden">
+          <details>
+            <summary class="flex items-center justify-between px-4 py-3 cursor-pointer text-sm font-semibold text-slate-700">
+              <span>🧾 ${t('orderSummary')}</span>
+              <span class="text-teal-600 font-black">${this.fmt(grandTotal)}</span>
+            </summary>
+            <div class="px-4 pb-1 border-t border-slate-200 pt-2">
+              ${summaryItems}
+            </div>
+          </details>
+          <div class="px-4 pb-3 border-t border-slate-100">
+            <div class="flex justify-between items-center py-1.5">
+              <span class="text-xs text-slate-500">${t('subtotal')}</span>
+              <span class="text-xs font-semibold text-slate-700">${this.fmt(this.cartTotal())}</span>
+            </div>
+            <div class="flex justify-between items-center py-1.5">
+              <span class="text-xs text-slate-500">${t('shippingEst')} ${selectedDelivery ? '(' + selectedDelivery.name + ')' : ''}</span>
+              <span class="text-xs font-semibold ${isPickup ? 'text-green-600' : 'text-slate-700'}">
+                ${isPickup ? (lang === 'id' ? 'Gratis' : 'Free') : this.fmt(shippingFee)}
+              </span>
+            </div>
+            <div class="flex justify-between items-center pt-2 border-t border-slate-200 mt-1">
+              <span class="text-sm font-bold text-slate-800">${t('total')}</span>
+              <span class="text-sm font-black text-teal-600">${this.fmt(grandTotal)}</span>
             </div>
           </div>
-        </details>
+        </div>
 
         ${groupsHtml}
 
@@ -804,7 +1050,7 @@ const App = {
       <div class="bottom-bar">
         <button id="btnPay"
           class="w-full bg-teal-600 text-white font-bold py-3.5 rounded-xl text-sm">
-          ${t('payNow')} · ${this.fmt(this.cartTotal())}
+          ${t('payNow')} · ${this.fmt(grandTotal)}
         </button>
       </div>
     `;
@@ -816,9 +1062,11 @@ const App = {
   screenDelivery() {
     const { selectedDelivery, deliveryAddress } = this.state;
     const lang = this.state.lang;
+    const isPickup = selectedDelivery?.id === 'pickup';
 
     const buildCourierCard = (c) => {
-      const sel = selectedDelivery && selectedDelivery.id === c.id;
+      const sel = selectedDelivery?.id === c.id;
+      const isFree = c.price === 0;
       return `
         <button class="select-card courier-btn w-full flex items-center gap-3 border-2 rounded-xl p-3 text-left transition-all
           ${sel ? 'selected' : 'border-slate-200 bg-white'}" data-courier-id="${c.id}">
@@ -830,77 +1078,70 @@ const App = {
             <p class="text-xs text-slate-400">${t('estArrival')}: ${lang === 'id' ? c.est_id : c.est_en}</p>
           </div>
           <div class="text-right flex-shrink-0">
-            <p class="font-bold text-sm ${sel ? 'text-teal-600' : 'text-slate-700'}">${this.fmt(c.price)}</p>
+            <p class="font-bold text-sm ${sel ? 'text-teal-600' : isFree ? 'text-green-600' : 'text-slate-700'}">
+              ${isFree ? (lang === 'id' ? 'Gratis' : 'Free') : this.fmt(c.price)}
+            </p>
             ${sel ? '<div class="w-5 h-5 bg-teal-500 rounded-full flex items-center justify-center mt-1 ml-auto"><svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div>' : ''}
           </div>
-        </button>
-      `;
+        </button>`;
     };
 
-    const groups = [
+    const groupsHtml = [
       { labelKey: 'regularGroup', couriers: COURIERS.filter(c => c.group === 'regular') },
       { labelKey: 'expressGroup', couriers: COURIERS.filter(c => c.group === 'express') },
       { labelKey: 'instantGroup', couriers: COURIERS.filter(c => c.group === 'instant') },
-    ];
-
-    const groupsHtml = groups.map(g => `
-      <div class="mb-5">
-        <p class="text-sm font-bold text-slate-700 mb-2">${t(g.labelKey)}</p>
+    ].map(g => `
+      <div class="mb-4">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">${t(g.labelKey)}</p>
         <div class="flex flex-col gap-2">${g.couriers.map(buildCourierCard).join('')}</div>
-      </div>
-    `).join('');
+      </div>`).join('');
 
-    const total = this.cartTotal() + (selectedDelivery ? selectedDelivery.price : 0);
+    const pickupCard = `
+      <div class="mb-4">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">${t('pickupGroup')}</p>
+        <div class="flex flex-col gap-2">${buildCourierCard(COURIERS.find(c => c.id === 'pickup'))}</div>
+        ${isPickup ? `<p class="text-xs text-slate-400 mt-2 px-1">📍 ${t('pickupNote')}</p>` : ''}
+      </div>`;
+
+    const addressSection = isPickup ? '' : `
+      <div class="mb-5">
+        <label class="block text-sm font-semibold text-slate-700 mb-2">${t('addressLabel')}</label>
+        <div class="flex gap-2 mb-2">
+          <input id="mapSearch" type="text"
+            placeholder="${lang === 'id' ? 'Cari nama gedung atau alamat...' : 'Search building name or address...'}"
+            class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm">
+          <button id="btnMapSearch"
+            class="bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0 active:bg-teal-700">
+            ${lang === 'id' ? 'Cari' : 'Search'}
+          </button>
+        </div>
+        <div id="mapSearchError" class="hidden text-red-500 text-xs mb-1.5">
+          ${lang === 'id' ? 'Lokasi tidak ditemukan. Coba nama yang lebih spesifik.' : 'Location not found. Try a more specific name.'}
+        </div>
+        <div id="deliveryMap" class="w-full rounded-xl border border-slate-200 overflow-hidden mb-3" style="height:200px; z-index:0;"></div>
+        <textarea id="inputAddress" rows="3"
+          placeholder="${t('addressPlaceholder')}"
+          class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm resize-none"
+        >${deliveryAddress}</textarea>
+        <span id="errAddress" class="hidden text-red-500 text-xs mt-1 block">${t('errAddress')}</span>
+      </div>`;
 
     return `
-      <div class="px-4 pt-5 pb-40">
+      <div class="px-4 pt-5 pb-36">
         <h2 class="text-xl font-bold text-slate-800 mb-1">${t('delivTitle')}</h2>
         <p class="text-sm text-slate-500 mb-5">${t('delivSub')}</p>
 
-        <!-- Address -->
-        <div class="mb-6">
-          <label class="block text-sm font-semibold text-slate-700 mb-2">${t('addressLabel')}</label>
-
-          <!-- Map -->
-          <div class="mb-3">
-            <p class="text-xs text-slate-400 mb-1.5">📍 ${t('mapLabel')}</p>
-            <div class="flex gap-2 mb-2">
-              <input id="mapSearch" type="text"
-                placeholder="${this.state.lang === 'id' ? 'Cari nama gedung atau alamat...' : 'Search building name or address...'}"
-                class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm transition-colors">
-              <button id="btnMapSearch"
-                class="bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0 active:bg-teal-700 transition-colors">
-                ${this.state.lang === 'id' ? 'Cari' : 'Search'}
-              </button>
-            </div>
-            <div id="mapSearchError" class="hidden text-red-500 text-xs mb-1.5">
-              ${this.state.lang === 'id' ? 'Lokasi tidak ditemukan. Coba nama yang lebih spesifik.' : 'Location not found. Try a more specific name.'}
-            </div>
-            <div id="deliveryMap" class="w-full rounded-xl border border-slate-200 overflow-hidden" style="height:200px; z-index:0;"></div>
-            <p class="text-[10px] text-slate-400 mt-1">${t('mapHint')}</p>
-          </div>
-
-          <textarea id="inputAddress" rows="3"
-            placeholder="${t('addressPlaceholder')}"
-            class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm resize-none transition-colors"
-          >${deliveryAddress}</textarea>
-          <span id="errAddress" class="hidden text-red-500 text-xs mt-1">${t('errAddress')}</span>
-        </div>
-
-        <!-- Courier groups -->
         ${groupsHtml}
+        ${pickupCard}
+        <span id="errDelivery" class="hidden text-red-500 text-xs block mb-4">${t('errDelivery')}</span>
 
-        <span id="errDelivery" class="hidden text-red-500 text-xs block mb-2">${t('errDelivery')}</span>
+        ${addressSection}
       </div>
 
       <div class="bottom-bar">
-        <div class="flex justify-between text-xs text-slate-500 mb-2">
-          <span>${t('total')}</span>
-          <span class="font-bold text-teal-700">${selectedDelivery ? this.fmt(total) : '—'}</span>
-        </div>
-        <button id="btnConfirmOrder"
+        <button id="btnContinueToPayment"
           class="w-full bg-teal-600 text-white font-bold py-3.5 rounded-xl text-sm">
-          ${t('confirmOrder')}
+          ${t('continueToPayment')}
         </button>
       </div>
     `;
@@ -926,18 +1167,24 @@ const App = {
       </div>
     `).join('');
 
-    const delivTotal = this.cartTotal() + (selectedDelivery ? selectedDelivery.price : 0);
+    const isPickup = selectedDelivery?.id === 'pickup';
+    const delivTotal = this.cartTotal() + (isPickup ? 0 : (selectedDelivery?.price || 0));
 
     const now = orderTime || new Date();
-    const days = selectedDelivery?.est_id?.includes('jam') ? 0
-               : selectedDelivery?.est_id?.includes('Hari ini') ? 0
-               : selectedDelivery?.est_id?.includes('1 hari') ? 1
-               : 3;
-    const arrivalDate = new Date(now);
-    arrivalDate.setDate(arrivalDate.getDate() + days);
-    const arrivalStr = days === 0
-      ? (lang === 'id' ? 'Hari ini' : 'Today')
-      : arrivalDate.toLocaleDateString(lang === 'id' ? 'id-ID' : 'en-GB', { weekday:'long', day:'numeric', month:'long' });
+    let arrivalStr;
+    if (isPickup) {
+      arrivalStr = lang === 'id' ? 'Ambil di Apotek' : 'Pickup In-store';
+    } else {
+      const days = selectedDelivery?.est_id?.includes('jam') ? 0
+                 : selectedDelivery?.est_id?.includes('Hari ini') ? 0
+                 : selectedDelivery?.est_id?.includes('1 hari') ? 1
+                 : 3;
+      const arrivalDate = new Date(now);
+      arrivalDate.setDate(arrivalDate.getDate() + days);
+      arrivalStr = days === 0
+        ? (lang === 'id' ? 'Hari ini' : 'Today')
+        : arrivalDate.toLocaleDateString(lang === 'id' ? 'id-ID' : 'en-GB', { weekday:'long', day:'numeric', month:'long' });
+    }
 
     return `
       <div class="flex flex-col min-h-screen bg-gradient-to-b from-teal-50 to-white">
@@ -1092,29 +1339,28 @@ const App = {
       case 'cart':
         onAll('.qty-btn', 'click', this.handleQtyChange);
         onAll('.btn-remove', 'click', this.handleRemoveItem);
-        on('btnCheckout', 'click', () => this.navigate('payment'));
+        on('btnCheckout', 'click', () => this.navigate('delivery'));
         on('btnBackToRec', 'click', () => this.navigate('recommendations'));
+        break;
+
+      case 'delivery':
+        onAll('.courier-btn', 'click', this.handleCourierSelect);
+        on('inputAddress', 'input', (e) => { this.state.deliveryAddress = e.target.value; });
+        on('btnContinueToPayment', 'click', this.handleConfirmDelivery);
+        on('btnMapSearch', 'click', () => this.handleMapSearch());
+        on('mapSearch', 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this.handleMapSearch(); } });
+        if (this.state.selectedDelivery?.id !== 'pickup') this.initDeliveryMap();
         break;
 
       case 'payment':
         onAll('.pay-method-btn', 'click', this.handlePaymentSelect);
         on('btnPay', 'click', this.handlePay);
-        // Save sub-form data live
         ['cardNum','cardExp','cardCvv','cardName','phoneWallet'].forEach(fid => {
           on(fid, 'input', (e) => {
             const map = { cardNum:'cardNum', cardExp:'cardExp', cardCvv:'cardCvv', cardName:'cardName', phoneWallet:'phone' };
             this.state.paymentSubData[map[fid]] = e.target.value;
           });
         });
-        break;
-
-      case 'delivery':
-        onAll('.courier-btn', 'click', this.handleCourierSelect);
-        on('inputAddress', 'input', (e) => { this.state.deliveryAddress = e.target.value; });
-        on('btnConfirmOrder', 'click', this.handleConfirmOrder);
-        on('btnMapSearch', 'click', () => this.handleMapSearch());
-        on('mapSearch', 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this.handleMapSearch(); } });
-        this.initDeliveryMap();
         break;
 
       case 'confirmation':
@@ -1154,8 +1400,8 @@ const App = {
       doctorOffer: 'consultation',
       recommendations: 'consultation',
       cart: 'recommendations',
-      payment: 'cart',
-      delivery: 'payment',
+      delivery: 'cart',
+      payment: 'delivery',
     };
     const dest = backMap[this.state.screen];
     if (dest) this.navigate(dest);
@@ -1282,19 +1528,44 @@ const App = {
     this.render();
   },
 
+  handleConfirmDelivery() {
+    let valid = true;
+    const isPickup = this.state.selectedDelivery?.id === 'pickup';
+
+    if (!this.state.selectedDelivery) {
+      document.getElementById('errDelivery')?.classList.remove('hidden');
+      valid = false;
+    } else {
+      document.getElementById('errDelivery')?.classList.add('hidden');
+    }
+
+    if (!isPickup && !this.state.deliveryAddress.trim()) {
+      document.getElementById('errAddress')?.classList.remove('hidden');
+      valid = false;
+    } else {
+      document.getElementById('errAddress')?.classList.add('hidden');
+    }
+
+    if (!valid) {
+      const firstErr = document.querySelector('#errDelivery:not(.hidden), #errAddress:not(.hidden)');
+      if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    this.navigate('payment');
+  },
+
   handlePay() {
     if (!this.state.selectedPayment) {
       document.getElementById('errPayment')?.classList.remove('hidden');
       return;
     }
-    // Simulate processing
     const btn = document.getElementById('btnPay');
     if (btn) {
       btn.textContent = t('processingPay');
       btn.disabled = true;
       btn.classList.add('opacity-75');
     }
-    setTimeout(() => this.navigate('delivery'), 1500);
+    setTimeout(() => this.handleConfirmOrder(), 1500);
   },
 
   handleCourierSelect(e) {
@@ -1307,23 +1578,6 @@ const App = {
   },
 
   handleConfirmOrder() {
-    let valid = true;
-
-    if (!this.state.deliveryAddress.trim()) {
-      document.getElementById('errAddress')?.classList.remove('hidden');
-      valid = false;
-    } else {
-      document.getElementById('errAddress')?.classList.add('hidden');
-    }
-
-    if (!this.state.selectedDelivery) {
-      document.getElementById('errDelivery')?.classList.remove('hidden');
-      valid = false;
-    } else {
-      document.getElementById('errDelivery')?.classList.add('hidden');
-    }
-
-    if (!valid) return;
 
     // Generate order number
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -1340,7 +1594,7 @@ const App = {
   initDeliveryMap() {
     const container = document.getElementById('deliveryMap');
     if (!container || typeof L === 'undefined') return;
-    if (container._leaflet_id) return;
+    if (this._map) { this._map.remove(); this._map = null; this._mapMarker = null; }
 
     const jakarta = [-6.2088, 106.8456];
     this._map = L.map('deliveryMap', { zoomControl: true }).setView(jakarta, 13);
