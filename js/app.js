@@ -83,7 +83,7 @@ const App = {
   ───────────────────────────────────────────── */
   buildApp() {
     const s = this.state.screen;
-    const showHeader = !['welcome', 'searching'].includes(s);
+    const showHeader = !['welcome', 'searching', 'confirmation'].includes(s);
     const STEP_SCREENS = ['consultation','recommendations','cart','delivery','payment'];
     const stepIdx = s === 'doctorOffer' ? 0 : STEP_SCREENS.indexOf(s);
 
